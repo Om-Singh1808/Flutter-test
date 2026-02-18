@@ -4,6 +4,8 @@ import 'package:mqtt_client/mqtt_server_client.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'widgets/mic_button.dart';
+import 'services/voice_service.dart';
 
 const String mqttHost =
     '10.0.2.2'; // Android emulator -> host machine
@@ -998,6 +1000,19 @@ class _HomePageState extends State<HomePage> {
   bool _isReconnecting = false;
   int _currentTab = 0;
 
+  // ─── Voice state ─────────────────────────────────────────────────────────
+  String _recognizedText = '';
+  Map<String, dynamic>? _lastVoiceJson;
+
+  /// Called by MicButton when speech is recognized and formatted as JSON.
+  void _onVoiceResult(Map<String, dynamic> json) {
+    setState(() {
+      _recognizedText = json['text'] as String? ?? '';
+      _lastVoiceJson = json;
+    });
+    debugPrint('[Voice] JSON:\n${encodeVoiceCommandJson(json)}');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1326,7 +1341,9 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           },
-          child: _currentTab == 0
+          child: _currentTab == 2
+              ? _buildVoiceTab()
+              : _currentTab == 0
               ? Column(
                   key: const ValueKey('rooms'),
                   children: [
@@ -1836,6 +1853,17 @@ class _HomePageState extends State<HomePage> {
             ),
             NavigationDestination(
               icon: Icon(
+                Icons.mic_none_rounded,
+                color: Color(0xFF666666),
+              ),
+              selectedIcon: Icon(
+                Icons.mic_rounded,
+                color: Color(0xFFFFD700),
+              ),
+              label: 'Voice',
+            ),
+            NavigationDestination(
+              icon: Icon(
                 Icons.settings,
                 color: Color(0xFF666666),
               ),
@@ -1847,6 +1875,153 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ─── Voice Tab ────────────────────────────────────────────────────────────
+
+  Widget _buildVoiceTab() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final hasText = _recognizedText.isNotEmpty;
+
+    return SingleChildScrollView(
+      key: const ValueKey('voice'),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 28,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // ── Header ──────────────────────────────────────────────────────
+          Text(
+            'Voice Command',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Speak a command to control your devices',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 48),
+
+          // ── Mic Button ──────────────────────────────────────────────────
+          MicButton(onJsonResult: _onVoiceResult),
+          const SizedBox(height: 40),
+
+          // ── Recognized Text Card ────────────────────────────────────────
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: hasText
+                ? LuxCard(
+                    key: const ValueKey('voice_result'),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.record_voice_over_rounded,
+                              size: 16,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Recognized Text',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: colorScheme.primary,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _recognizedText,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                              ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey('voice_empty')),
+          ),
+
+          // ── JSON Preview Card ───────────────────────────────────────────
+          if (_lastVoiceJson != null) ...[
+            const SizedBox(height: 16),
+            LuxCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.data_object_rounded,
+                        size: 16,
+                        color: colorScheme.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'JSON Payload',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.primary,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const Spacer(),
+                      StatusPill(
+                        text: 'MQTT Ready',
+                        icon: Icons.send_rounded,
+                        backgroundColor:
+                            colorScheme.primary.withOpacity(0.1),
+                        textColor: colorScheme.primary,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0B1020),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: const Color(0xFF2A3553),
+                      ),
+                    ),
+                    child: Text(
+                      encodeVoiceCommandJson(_lastVoiceJson!),
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                        color: Color(0xFF7EC8A4),
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
