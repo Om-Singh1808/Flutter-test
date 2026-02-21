@@ -1006,11 +1006,23 @@ class _HomePageState extends State<HomePage> {
 
   /// Called by MicButton when speech is recognized and formatted as JSON.
   void _onVoiceResult(Map<String, dynamic> json) {
+    final rawVoiceText =
+        json['text'] as String? ?? '';
+    final payload = {
+      'area': 'bedroom',
+      'raw_voice_data': rawVoiceText,
+    };
+
     setState(() {
-      _recognizedText = json['text'] as String? ?? '';
-      _lastVoiceJson = json;
+      _recognizedText = rawVoiceText;
+      _lastVoiceJson = payload;
     });
-    debugPrint('[Voice] JSON:\n${encodeVoiceCommandJson(json)}');
+
+    mqtt.publish('voice_cmd', payload);
+
+    debugPrint(
+      '[Voice] JSON:\n${encodeVoiceCommandJson(payload)}',
+    );
   }
 
   @override
@@ -1341,7 +1353,7 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           },
-          child: _currentTab == 2
+          child: _currentTab == 1
               ? _buildVoiceTab()
               : _currentTab == 0
               ? Column(
@@ -1882,7 +1894,9 @@ class _HomePageState extends State<HomePage> {
   // ─── Voice Tab ────────────────────────────────────────────────────────────
 
   Widget _buildVoiceTab() {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = Theme.of(
+      context,
+    ).colorScheme;
     final hasText = _recognizedText.isNotEmpty;
 
     return SingleChildScrollView(
@@ -1892,23 +1906,31 @@ class _HomePageState extends State<HomePage> {
         vertical: 28,
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment:
+            CrossAxisAlignment.center,
         children: [
           // ── Header ──────────────────────────────────────────────────────
           Text(
             'Voice Command',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-              color: colorScheme.onSurface,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  color: colorScheme.onSurface,
+                ),
           ),
           const SizedBox(height: 6),
           Text(
             'Speak a command to control your devices',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(
+                  color: colorScheme
+                      .onSurfaceVariant,
+                ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 48),
@@ -1919,47 +1941,68 @@ class _HomePageState extends State<HomePage> {
 
           // ── Recognized Text Card ────────────────────────────────────────
           AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
+            duration: const Duration(
+              milliseconds: 300,
+            ),
             child: hasText
                 ? LuxCard(
-                    key: const ValueKey('voice_result'),
+                    key: const ValueKey(
+                      'voice_result',
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment
+                              .start,
                       children: [
                         Row(
                           children: [
                             Icon(
-                              Icons.record_voice_over_rounded,
+                              Icons
+                                  .record_voice_over_rounded,
                               size: 16,
-                              color: colorScheme.primary,
+                              color: colorScheme
+                                  .primary,
                             ),
-                            const SizedBox(width: 8),
+                            const SizedBox(
+                              width: 8,
+                            ),
                             Text(
                               'Recognized Text',
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: colorScheme.primary,
-                                letterSpacing: 0.5,
+                                fontWeight:
+                                    FontWeight
+                                        .w700,
+                                color: colorScheme
+                                    .primary,
+                                letterSpacing:
+                                    0.5,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(
+                          height: 12,
+                        ),
                         Text(
                           _recognizedText,
                           style: Theme.of(context)
                               .textTheme
                               .bodyLarge
                               ?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
+                                fontWeight:
+                                    FontWeight
+                                        .w600,
+                                color: colorScheme
+                                    .onSurface,
                               ),
                         ),
                       ],
                     ),
                   )
-                : const SizedBox.shrink(key: ValueKey('voice_empty')),
+                : const SizedBox.shrink(
+                    key: ValueKey('voice_empty'),
+                  ),
           ),
 
           // ── JSON Preview Card ───────────────────────────────────────────
@@ -1967,22 +2010,26 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 16),
             LuxCard(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       Icon(
                         Icons.data_object_rounded,
                         size: 16,
-                        color: colorScheme.primary,
+                        color:
+                            colorScheme.primary,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'JSON Payload',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: colorScheme.primary,
+                          fontWeight:
+                              FontWeight.w700,
+                          color:
+                              colorScheme.primary,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -1991,24 +2038,37 @@ class _HomePageState extends State<HomePage> {
                         text: 'MQTT Ready',
                         icon: Icons.send_rounded,
                         backgroundColor:
-                            colorScheme.primary.withOpacity(0.1),
-                        textColor: colorScheme.primary,
+                            colorScheme.primary
+                                .withOpacity(0.1),
+                        textColor:
+                            colorScheme.primary,
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(
+                      12,
+                    ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0B1020),
-                      borderRadius: BorderRadius.circular(10),
+                      color: const Color(
+                        0xFF0B1020,
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(
+                            10,
+                          ),
                       border: Border.all(
-                        color: const Color(0xFF2A3553),
+                        color: const Color(
+                          0xFF2A3553,
+                        ),
                       ),
                     ),
                     child: Text(
-                      encodeVoiceCommandJson(_lastVoiceJson!),
+                      encodeVoiceCommandJson(
+                        _lastVoiceJson!,
+                      ),
                       style: const TextStyle(
                         fontFamily: 'monospace',
                         fontSize: 12,
