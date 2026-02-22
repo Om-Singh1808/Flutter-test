@@ -774,11 +774,17 @@ class _HomePageState extends State<HomePage> {
 
   /// Called by MicButton when speech is recognized and formatted as JSON.
   void _onVoiceResult(Map<String, dynamic> json) {
+    final rawVoiceText = json['text'] as String? ?? '';
+    final payload = {'area': 'bedroom', 'raw_voice_data': rawVoiceText};
+
     setState(() {
-      _recognizedText = json['text'] as String? ?? '';
-      _lastVoiceJson = json;
+      _recognizedText = rawVoiceText;
+      _lastVoiceJson = payload;
     });
-    debugPrint('[Voice] JSON:\n${encodeVoiceCommandJson(json)}');
+
+    mqtt.publish('voice_cmd', payload);
+
+    debugPrint('[Voice] JSON:\n${encodeVoiceCommandJson(payload)}');
   }
 
   @override

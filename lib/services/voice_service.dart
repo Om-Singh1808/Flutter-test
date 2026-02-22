@@ -4,18 +4,26 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
 /// Formats recognized speech text into the standard voice command JSON payload.
-Map<String, dynamic> formatVoiceCommandJson(String text) {
+Map<String, dynamic> formatVoiceCommandJson(
+  String text,
+) {
   return {
     'type': 'voice_command',
     'text': text,
-    'timestamp': DateTime.now().toUtc().toIso8601String(),
+    'timestamp': DateTime.now()
+        .toUtc()
+        .toIso8601String(),
     'device': 'flutter_app',
   };
 }
 
 /// Serializes the voice command map to a pretty-printed JSON string.
-String encodeVoiceCommandJson(Map<String, dynamic> payload) {
-  return const JsonEncoder.withIndent('  ').convert(payload);
+String encodeVoiceCommandJson(
+  Map<String, dynamic> payload,
+) {
+  return const JsonEncoder.withIndent(
+    '  ',
+  ).convert(payload);
 }
 
 /// Service that manages speech recognition lifecycle.
@@ -45,9 +53,12 @@ class VoiceService {
   ///
   /// Returns `true` if initialization succeeded, `false` otherwise.
   Future<bool> initialize() async {
-    final permissionStatus = await _requestMicrophonePermission();
+    final permissionStatus =
+        await _requestMicrophonePermission();
     if (!permissionStatus) {
-      debugPrint('[VoiceService] Microphone permission denied.');
+      debugPrint(
+        '[VoiceService] Microphone permission denied.',
+      );
       return false;
     }
 
@@ -56,8 +67,10 @@ class VoiceService {
   }
 
   /// Requests the RECORD_AUDIO runtime permission.
-  Future<bool> _requestMicrophonePermission() async {
-    final status = await Permission.microphone.request();
+  Future<bool>
+  _requestMicrophonePermission() async {
+    final status = await Permission.microphone
+        .request();
     return status == PermissionStatus.granted;
   }
 
@@ -70,11 +83,15 @@ class VoiceService {
         debugLogging: false,
       );
       if (!available) {
-        debugPrint('[VoiceService] Speech recognition not available on device.');
+        debugPrint(
+          '[VoiceService] Speech recognition not available on device.',
+        );
       }
       return available;
     } catch (e) {
-      debugPrint('[VoiceService] Initialization error: $e');
+      debugPrint(
+        '[VoiceService] Initialization error: $e',
+      );
       return false;
     }
   }
@@ -87,55 +104,71 @@ class VoiceService {
   /// [onListeningStateChanged] is called when the listening state changes.
   Future<void> startListening({
     required void Function(String text) onResult,
-    void Function(bool isListening)? onListeningStateChanged,
+    void Function(bool isListening)?
+    onListeningStateChanged,
   }) async {
     if (!_initialized) {
-      debugPrint('[VoiceService] Not initialized. Call initialize() first.');
+      debugPrint(
+        '[VoiceService] Not initialized. Call initialize() first.',
+      );
       return;
     }
     if (_listening) return;
 
     await _speech.listen(
       onResult: (result) {
-        final text = result.recognizedWords.trim();
-        if (text.isNotEmpty) {
-          onResult(text);
+        if (result.finalResult) {
+          final text = result.recognizedWords
+              .trim();
+          if (text.isNotEmpty) {
+            onResult(text);
+          }
         }
       },
       listenFor: const Duration(seconds: 30),
       pauseFor: const Duration(seconds: 4),
       listenOptions: SpeechListenOptions(
-        partialResults: true,
+        partialResults: false,
         cancelOnError: true,
       ),
     );
 
     _listening = true;
     onListeningStateChanged?.call(true);
-    debugPrint('[VoiceService] Listening started.');
+    debugPrint(
+      '[VoiceService] Listening started.',
+    );
   }
 
   /// Stops the active listening session.
   Future<void> stopListening({
-    void Function(bool isListening)? onListeningStateChanged,
+    void Function(bool isListening)?
+    onListeningStateChanged,
   }) async {
     if (!_listening) return;
     await _speech.stop();
     _listening = false;
     onListeningStateChanged?.call(false);
-    debugPrint('[VoiceService] Listening stopped.');
+    debugPrint(
+      '[VoiceService] Listening stopped.',
+    );
   }
 
   // ─── Internal Callbacks ────────────────────────────────────────────────────
 
   void _onSpeechError(dynamic error) {
-    debugPrint('[VoiceService] Speech error: $error');
+    debugPrint(
+      '[VoiceService] Speech error: $error',
+    );
     _listening = false;
   }
 
   void _onSpeechStatus(String status) {
-    debugPrint('[VoiceService] Speech status: $status');
-    if (status == 'done' || status == 'notListening') {
+    debugPrint(
+      '[VoiceService] Speech status: $status',
+    );
+    if (status == 'done' ||
+        status == 'notListening') {
       _listening = false;
     }
   }
