@@ -7,8 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/mic_button.dart';
 import 'services/voice_service.dart';
 
-const String mqttHost =
-    '10.0.2.2'; // Android emulator -> host machine
+import 'screens/document_upload_screen.dart';
+
+const String mqttHost = '10.0.2.2'; // Android emulator -> host machine
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,8 +33,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<bool> _isLoggedIn() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('loggedIn') ?? false;
   }
 
@@ -42,9 +42,7 @@ class _MyAppState extends State<MyApp> {
     return FutureBuilder<bool>(
       future: _loggedInFuture,
       builder: (context, snapshot) {
-        final ready =
-            snapshot.connectionState ==
-            ConnectionState.done;
+        final ready = snapshot.connectionState == ConnectionState.done;
         final loggedIn = snapshot.data ?? false;
 
         return MaterialApp(
@@ -56,16 +54,12 @@ class _MyAppState extends State<MyApp> {
               primary: Color(0xFFF5C542),
               secondary: Color(0xFFF5C542),
               surface: Color(0xFF111A2E),
-              surfaceContainerHighest: Color(
-                0xFF151F36,
-              ),
+              surfaceContainerHighest: Color(0xFF151F36),
               onSurface: Color(0xFFE9EDF7),
               onSurfaceVariant: Color(0xFFB9C2D3),
               error: Color(0xFFFF4D4D),
             ),
-            scaffoldBackgroundColor: const Color(
-              0xFF0B1020,
-            ),
+            scaffoldBackgroundColor: const Color(0xFF0B1020),
             appBarTheme: const AppBarTheme(
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -76,133 +70,76 @@ class _MyAppState extends State<MyApp> {
               elevation: 0,
               margin: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(20),
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+              ),
+            ),
+            navigationBarTheme: NavigationBarThemeData(
+              backgroundColor: const Color(0xFF0B1020),
+              indicatorColor: const Color(0xFFF5C542).withOpacity(0.16),
+              labelTextStyle: WidgetStateProperty.all(
+                const TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+            filledButtonTheme: FilledButtonThemeData(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFF5C542),
+                foregroundColor: const Color(0xFF0B1020),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 18,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
-            navigationBarTheme:
-                NavigationBarThemeData(
-                  backgroundColor: const Color(
-                    0xFF0B1020,
-                  ),
-                  indicatorColor: const Color(
-                    0xFFF5C542,
-                  ).withOpacity(0.16),
-                  labelTextStyle:
-                      WidgetStateProperty.all(
-                        const TextStyle(
-                          fontWeight:
-                              FontWeight.w700,
-                        ),
-                      ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFF2A3553)),
+                foregroundColor: const Color(0xFFE9EDF7),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 18,
                 ),
-            filledButtonTheme:
-                FilledButtonThemeData(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(
-                      0xFFF5C542,
-                    ),
-                    foregroundColor: const Color(
-                      0xFF0B1020,
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 18,
-                        ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                            16,
-                          ),
-                    ),
-                  ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-            outlinedButtonTheme:
-                OutlinedButtonThemeData(
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                      color: Color(0xFF2A3553),
-                    ),
-                    foregroundColor: const Color(
-                      0xFFE9EDF7,
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 18,
-                        ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                            16,
-                          ),
-                    ),
-                  ),
-                ),
+              ),
+            ),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
-            inputDecorationTheme:
-                InputDecorationTheme(
-                  border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF2A3553),
-                    ),
-                  ),
-                  enabledBorder:
-                      OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                              14,
-                            ),
-                        borderSide:
-                            const BorderSide(
-                              color: Color(
-                                0xFF2A3553,
-                              ),
-                            ),
-                      ),
-                  focusedBorder:
-                      OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(
-                              14,
-                            ),
-                        borderSide:
-                            const BorderSide(
-                              color: Color(
-                                0xFFF5C542,
-                              ),
-                              width: 2,
-                            ),
-                      ),
-                  filled: true,
-                  fillColor: const Color(
-                    0xFF111A2E,
-                  ),
-                  labelStyle: const TextStyle(
-                    color: Color(0xFFB9C2D3),
-                  ),
+            inputDecorationTheme: InputDecorationTheme(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFF2A3553)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFF2A3553)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(
+                  color: Color(0xFFF5C542),
+                  width: 2,
                 ),
+              ),
+              filled: true,
+              fillColor: const Color(0xFF111A2E),
+              labelStyle: const TextStyle(color: Color(0xFFB9C2D3)),
+            ),
           ),
           home: ready
-              ? (loggedIn
-                    ? const HomePage()
-                    : const LoginPage())
+              ? (loggedIn ? const HomePage() : const LoginPage())
               : const _SplashPage(),
         );
       },
@@ -220,9 +157,7 @@ class _SplashPage extends StatelessWidget {
         child: SizedBox(
           height: 28,
           width: 28,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.5,
-          ),
+          child: CircularProgressIndicator(strokeWidth: 2.5),
         ),
       ),
     );
@@ -247,16 +182,11 @@ class StatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color:
             backgroundColor ??
-            Theme.of(
-              context,
-            ).colorScheme.surfaceContainerHighest,
+            Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -267,10 +197,7 @@ class StatusPill extends StatelessWidget {
               icon,
               size: 14,
               color:
-                  textColor ??
-                  Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
+                  textColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: 4),
           ],
@@ -280,10 +207,7 @@ class StatusPill extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color:
-                  textColor ??
-                  Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
+                  textColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -310,10 +234,7 @@ class LuxCard extends StatelessWidget {
     return Card(
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: padding,
-          child: child,
-        ),
+        child: Padding(padding: padding, child: child),
       ),
     );
   }
@@ -323,33 +244,23 @@ class LuxCard extends StatelessWidget {
 
 class MQTTManager {
   MQTTManager._internal();
-  static final MQTTManager _instance =
-      MQTTManager._internal();
+  static final MQTTManager _instance = MQTTManager._internal();
   factory MQTTManager() => _instance;
 
   late MqttServerClient client;
-  final ValueNotifier<bool> connected =
-      ValueNotifier<bool>(false);
+  final ValueNotifier<bool> connected = ValueNotifier<bool>(false);
   String? _lastServer;
   int? _lastPort;
 
   String? get lastServer => _lastServer;
   int? get lastPort => _lastPort;
 
-  Future<void> connect({
-    required String server,
-    int port = 1883,
-  }) async {
+  Future<void> connect({required String server, int port = 1883}) async {
     _lastServer = server;
     _lastPort = port;
 
-    final clientId =
-        'flutter_client_${DateTime.now().millisecondsSinceEpoch}';
-    client = MqttServerClient.withPort(
-      server,
-      clientId,
-      port,
-    );
+    final clientId = 'flutter_client_${DateTime.now().millisecondsSinceEpoch}';
+    client = MqttServerClient.withPort(server, clientId, port);
     client.logging(on: false);
     client.keepAlivePeriod = 20;
     client.onDisconnected = _onDisconnected;
@@ -357,10 +268,9 @@ class MQTTManager {
 
     client.secure = false;
 
-    client.connectionMessage =
-        MqttConnectMessage()
-            .withClientIdentifier(clientId)
-            .startClean();
+    client.connectionMessage = MqttConnectMessage()
+        .withClientIdentifier(clientId)
+        .startClean();
 
     try {
       await client.connect();
@@ -371,25 +281,20 @@ class MQTTManager {
       return;
     }
 
-    if (client.connectionStatus?.state ==
-        MqttConnectionState.connected) {
+    if (client.connectionStatus?.state == MqttConnectionState.connected) {
       connected.value = true;
     } else {
       connected.value = false;
-      print(
-        'Connection failed: ${client.connectionStatus?.state}',
-      );
+      print('Connection failed: ${client.connectionStatus?.state}');
       client.disconnect();
     }
   }
 
   void _onConnected() => connected.value = true;
-  void _onDisconnected() =>
-      connected.value = false;
+  void _onDisconnected() => connected.value = false;
 
   Future<bool> reconnectNow() async {
-    if (_lastServer == null ||
-        _lastPort == null) {
+    if (_lastServer == null || _lastPort == null) {
       return false;
     }
     try {
@@ -403,19 +308,12 @@ class MQTTManager {
     }
   }
 
-  void publish(
-    String topic,
-    Map<String, dynamic> payload,
-  ) {
+  void publish(String topic, Map<String, dynamic> payload) {
     if (!connected.value) return;
     final builder = MqttClientPayloadBuilder();
     final jsonString = jsonEncode(payload);
     builder.addString(jsonString);
-    client.publishMessage(
-      topic,
-      MqttQos.atLeastOnce,
-      builder.payload!,
-    );
+    client.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
   }
 
   void disconnect() {
@@ -430,19 +328,22 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() =>
-      _LoginPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _userController =
-      TextEditingController(text: 'admin');
-  final TextEditingController _passController =
-      TextEditingController(text: 'password');
-  final TextEditingController _hostController =
-      TextEditingController(text: mqttHost);
-  final TextEditingController _portController =
-      TextEditingController(text: '1883');
+  final TextEditingController _userController = TextEditingController(
+    text: 'admin',
+  );
+  final TextEditingController _passController = TextEditingController(
+    text: 'password',
+  );
+  final TextEditingController _hostController = TextEditingController(
+    text: mqttHost,
+  );
+  final TextEditingController _portController = TextEditingController(
+    text: '1883',
+  );
 
   bool _loading = false;
 
@@ -453,8 +354,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loadSavedBroker() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final host = prefs.getString('mqttHost');
     final port = prefs.getInt('mqttPort');
     if (host != null && host.isNotEmpty) {
@@ -468,18 +368,12 @@ class _LoginPageState extends State<LoginPage> {
   void _tryLogin() async {
     final username = _userController.text.trim();
     final password = _passController.text;
-    final host =
-        _hostController.text.trim().isEmpty
+    final host = _hostController.text.trim().isEmpty
         ? mqttHost
         : _hostController.text.trim();
-    final port =
-        int.tryParse(
-          _portController.text.trim(),
-        ) ??
-        1883;
+    final port = int.tryParse(_portController.text.trim()) ?? 1883;
 
-    if (username == 'admin' &&
-        password == 'password') {
+    if (username == 'admin' && password == 'password') {
       setState(() => _loading = true);
       try {
         // Connect MQTT with 5 second timeout
@@ -493,16 +387,13 @@ class _LoginPageState extends State<LoginPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text(
-                'Connection Timeout',
-              ),
+              title: const Text('Connection Timeout'),
               content: const Text(
                 'MQTT connection timed out. Make sure the broker is running.',
               ),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context),
                   child: const Text('OK'),
                 ),
               ],
@@ -517,16 +408,11 @@ class _LoginPageState extends State<LoginPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text(
-                'Connection Error',
-              ),
-              content: Text(
-                'Connection error: $e',
-              ),
+              title: const Text('Connection Error'),
+              content: Text('Connection error: $e'),
               actions: [
                 TextButton(
-                  onPressed: () =>
-                      Navigator.pop(context),
+                  onPressed: () => Navigator.pop(context),
                   child: const Text('OK'),
                 ),
               ],
@@ -540,16 +426,13 @@ class _LoginPageState extends State<LoginPage> {
       setState(() => _loading = false);
 
       if (MQTTManager().connected.value) {
-        final prefs =
-            await SharedPreferences.getInstance();
+        final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('loggedIn', true);
         await prefs.setString('mqttHost', host);
         await prefs.setInt('mqttPort', port);
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => const HomePage(),
-          ),
+          MaterialPageRoute(builder: (_) => const HomePage()),
         );
       } else {
         if (mounted) {
@@ -557,16 +440,11 @@ class _LoginPageState extends State<LoginPage> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: const Text(
-                  "Connection Status",
-                ),
-                content: const Text(
-                  "Connection Failed",
-                ),
+                title: const Text("Connection Status"),
+                content: const Text("Connection Failed"),
                 actions: [
                   TextButton(
-                    onPressed: () =>
-                        Navigator.pop(context),
+                    onPressed: () => Navigator.pop(context),
                     child: const Text("ok"),
                   ),
                 ],
@@ -577,11 +455,7 @@ class _LoginPageState extends State<LoginPage> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Invalid username or password',
-          ),
-        ),
+        const SnackBar(content: Text('Invalid username or password')),
       );
     }
   }
@@ -604,58 +478,36 @@ class _LoginPageState extends State<LoginPage> {
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 450,
-                ),
+                constraints: const BoxConstraints(maxWidth: 450),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Logo/Icon Header
                     TweenAnimationBuilder<double>(
-                      tween: Tween(
-                        begin: 0.0,
-                        end: 1.0,
-                      ),
-                      duration: const Duration(
-                        milliseconds: 800,
-                      ),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: const Duration(milliseconds: 800),
                       curve: Curves.easeOutBack,
-                      builder:
-                          (
-                            context,
-                            value,
-                            child,
-                          ) {
-                            return Transform.scale(
-                              scale: value,
-                              child: Opacity(
-                                opacity: value
-                                    .clamp(
-                                      0.0,
-                                      1.0,
-                                    ),
-                                child: child,
-                              ),
-                            );
-                          },
+                      builder: (context, value, child) {
+                        return Transform.scale(
+                          scale: value,
+                          child: Opacity(
+                            opacity: value.clamp(0.0, 1.0),
+                            child: child,
+                          ),
+                        );
+                      },
                       child: Container(
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.15),
-                          borderRadius:
-                              BorderRadius.circular(
-                                24,
-                              ),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(24),
                         ),
                         child: Icon(
                           Icons.lightbulb_rounded,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary,
+                          color: Theme.of(context).colorScheme.primary,
                           size: 40,
                         ),
                       ),
@@ -665,28 +517,19 @@ class _LoginPageState extends State<LoginPage> {
                     // Title
                     Text(
                       'luxOT',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineLarge
+                      style: Theme.of(context).textTheme.headlineLarge
                           ?.copyWith(
-                            fontWeight:
-                                FontWeight.w900,
+                            fontWeight: FontWeight.w900,
                             letterSpacing: -1,
                           ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Smart Lighting Control',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge
-                          ?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                            fontWeight:
-                                FontWeight.w500,
-                          ),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(height: 40),
 
@@ -696,18 +539,12 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: InputDecoration(
                         labelText: 'Username',
                         prefixIcon: Icon(
-                          Icons
-                              .person_outline_rounded,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary,
+                          Icons.person_outline_rounded,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        hintText:
-                            'Enter your username',
+                        hintText: 'Enter your username',
                       ),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 16),
 
@@ -717,51 +554,33 @@ class _LoginPageState extends State<LoginPage> {
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: Icon(
-                          Icons
-                              .lock_outline_rounded,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary,
+                          Icons.lock_outline_rounded,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
-                        hintText:
-                            'Enter your password',
+                        hintText: 'Enter your password',
                       ),
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodyMedium,
                       obscureText: true,
                     ),
                     const SizedBox(height: 32),
 
                     // Expandable Broker Settings
                     Theme(
-                      data: Theme.of(context)
-                          .copyWith(
-                            dividerColor: Colors
-                                .transparent,
-                          ),
+                      data: Theme.of(
+                        context,
+                      ).copyWith(dividerColor: Colors.transparent),
                       child: ExpansionTile(
                         title: Row(
                           children: [
                             Icon(
-                              Icons
-                                  .settings_input_antenna_rounded,
+                              Icons.settings_input_antenna_rounded,
                               size: 20,
-                              color:
-                                  Theme.of(
-                                        context,
-                                      )
-                                      .colorScheme
-                                      .primary,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
-                            const SizedBox(
-                              width: 8,
-                            ),
+                            const SizedBox(width: 8),
                             Text(
                               'Broker Settings',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .labelLarge
+                              style: Theme.of(context).textTheme.labelLarge
                                   ?.copyWith(
                                     color: Theme.of(
                                       context,
@@ -770,66 +589,46 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ],
                         ),
-                        tilePadding:
-                            EdgeInsets.zero,
-                        childrenPadding:
-                            const EdgeInsets.only(
-                              top: 16,
-                            ),
+                        tilePadding: EdgeInsets.zero,
+                        childrenPadding: const EdgeInsets.only(top: 16),
                         children: [
                           Row(
                             children: [
                               Expanded(
                                 flex: 2,
                                 child: TextField(
-                                  controller:
-                                      _hostController,
+                                  controller: _hostController,
                                   decoration: InputDecoration(
-                                    labelText:
-                                        'Host/IP',
-                                    hintText:
-                                        '192.168.1.10',
+                                    labelText: 'Host/IP',
+                                    hintText: '192.168.1.10',
                                     prefixIcon: Icon(
-                                      Icons
-                                          .wifi_tethering_rounded,
+                                      Icons.wifi_tethering_rounded,
                                       size: 18,
                                       color: Theme.of(
                                         context,
                                       ).colorScheme.primary,
                                     ),
                                   ),
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodySmall,
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ),
-                              const SizedBox(
-                                width: 12,
-                              ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: TextField(
-                                  controller:
-                                      _portController,
-                                  keyboardType:
-                                      TextInputType
-                                          .number,
+                                  controller: _portController,
+                                  keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
-                                    labelText:
-                                        'Port',
-                                    hintText:
-                                        '1883',
+                                    labelText: 'Port',
+                                    hintText: '1883',
                                     prefixIcon: Icon(
-                                      Icons
-                                          .settings_ethernet_rounded,
+                                      Icons.settings_ethernet_rounded,
                                       size: 18,
                                       color: Theme.of(
                                         context,
                                       ).colorScheme.primary,
                                     ),
                                   ),
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodySmall,
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ),
                             ],
@@ -844,88 +643,55 @@ class _LoginPageState extends State<LoginPage> {
                       width: double.infinity,
                       height: 48,
                       child: FilledButton(
-                        onPressed: _loading
-                            ? null
-                            : _tryLogin,
+                        onPressed: _loading ? null : _tryLogin,
                         child: _loading
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation<
-                                        Color
-                                      >(
-                                        Color(
-                                          0xFF0B1020,
-                                        ),
-                                      ),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF0B1020),
+                                  ),
                                 ),
                               )
-                            : const Text(
-                                'Sign In',
-                              ),
+                            : const Text('Sign In'),
                       ),
                     ),
                     const SizedBox(height: 24),
 
                     // Demo Credentials Info
                     Container(
-                      padding:
-                          const EdgeInsets.all(
-                            12,
-                          ),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .surface
-                            .withOpacity(0.5),
-                        borderRadius:
-                            BorderRadius.circular(
-                              12,
-                            ),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surface.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withOpacity(0.3),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.3),
                         ),
                       ),
                       child: Row(
-                        mainAxisSize:
-                            MainAxisSize.min,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons
-                                .info_outline_rounded,
+                            Icons.info_outline_rounded,
                             size: 16,
-                            color:
-                                Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withOpacity(
-                                      0.7,
-                                    ),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.7),
                           ),
-                          const SizedBox(
-                            width: 8,
-                          ),
+                          const SizedBox(width: 8),
                           Text(
                             'Demo: admin / password',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  color:
-                                      Theme.of(
-                                            context,
-                                          )
-                                          .colorScheme
-                                          .primary
-                                          .withOpacity(
-                                            0.7,
-                                          ),
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withOpacity(0.7),
                                 ),
                           ),
                         ],
@@ -946,8 +712,7 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() =>
-      _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
@@ -1000,6 +765,9 @@ class _HomePageState extends State<HomePage> {
   bool _isReconnecting = false;
   int _currentTab = 0;
 
+  // ─── Backend host (for PDF / document uploads) ────────────────────────────
+  String _backendHost = '10.0.2.2';
+
   // ─── Voice state ─────────────────────────────────────────────────────────
   String _recognizedText = '';
   Map<String, dynamic>? _lastVoiceJson;
@@ -1018,40 +786,32 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _loadData();
     _ensureConnection();
-    mqtt.connected.addListener(
-      _onConnectionChanged,
-    );
+    mqtt.connected.addListener(_onConnectionChanged);
   }
 
   Future<void> _loadData() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
+
+    // Load backend host
+    final savedBackend = prefs.getString('backendHost');
+    if (savedBackend != null && savedBackend.isNotEmpty) {
+      setState(() => _backendHost = savedBackend);
+    }
 
     // Load rooms
-    final roomsJson = prefs.getStringList(
-      'rooms',
-    );
-    if (roomsJson != null &&
-        roomsJson.isNotEmpty) {
+    final roomsJson = prefs.getStringList('rooms');
+    if (roomsJson != null && roomsJson.isNotEmpty) {
       setState(() => _roomsList = roomsJson);
     } else {
-      await prefs.setStringList(
-        'rooms',
-        _roomsList,
-      );
+      await prefs.setStringList('rooms', _roomsList);
     }
 
     // Load devices
-    final devicesJson = prefs.getStringList(
-      'devices',
-    );
-    if (devicesJson != null &&
-        devicesJson.isNotEmpty) {
+    final devicesJson = prefs.getStringList('devices');
+    if (devicesJson != null && devicesJson.isNotEmpty) {
       final devices = devicesJson.map((json) {
         final parts = json.split('|');
-        final type = parts.length >= 5
-            ? parts[3]
-            : 'light';
+        final type = parts.length >= 5 ? parts[3] : 'light';
         final onIndex = parts.length >= 5 ? 4 : 3;
         return {
           'id': parts[0],
@@ -1068,27 +828,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _saveDevices() async {
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final devicesJson = _lights
         .map(
           (light) =>
               '${light['id']}|${light['name']}|${light['room']}|${light['type'] ?? 'light'}|${light['on']}',
         )
         .toList();
-    await prefs.setStringList(
-      'devices',
-      devicesJson,
-    );
+    await prefs.setStringList('devices', devicesJson);
   }
 
   Future<void> _saveRooms() async {
-    final prefs =
-        await SharedPreferences.getInstance();
-    await prefs.setStringList(
-      'rooms',
-      _roomsList,
-    );
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('rooms', _roomsList);
   }
 
   List<String> get _rooms {
@@ -1098,29 +850,17 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _ensureConnection() async {
     if (mqtt.connected.value) return;
-    final prefs =
-        await SharedPreferences.getInstance();
-    final server =
-        prefs.getString('mqttHost') ??
-        mqtt.lastServer ??
-        mqttHost;
-    final port =
-        prefs.getInt('mqttPort') ??
-        mqtt.lastPort ??
-        1883;
-    await mqtt.connect(
-      server: server,
-      port: port,
-    );
+    final prefs = await SharedPreferences.getInstance();
+    final server = prefs.getString('mqttHost') ?? mqtt.lastServer ?? mqttHost;
+    final port = prefs.getInt('mqttPort') ?? mqtt.lastPort ?? 1883;
+    await mqtt.connect(server: server, port: port);
   }
 
   void _onConnectionChanged() => setState(() {});
 
   @override
   void dispose() {
-    mqtt.connected.removeListener(
-      _onConnectionChanged,
-    );
+    mqtt.connected.removeListener(_onConnectionChanged);
     super.dispose();
   }
 
@@ -1128,16 +868,14 @@ class _HomePageState extends State<HomePage> {
     setState(() => _lights[index]['on'] = value);
     final room = _lights[index]['room'];
     final id = _lights[index]['id'];
-    final deviceType =
-        _lights[index]['type'] ?? 'light';
+    final deviceType = _lights[index]['type'] ?? 'light';
     final topic = 'home';
     final payload = {
       'room': room,
       'device_type': deviceType,
       'device_id': id,
       'state': value ? 'ON' : 'OFF',
-      'timestamp': DateTime.now()
-          .toIso8601String(),
+      'timestamp': DateTime.now().toIso8601String(),
     };
     mqtt.publish(topic, payload);
     _saveDevices();
@@ -1182,14 +920,11 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _logout() async {
     mqtt.disconnect();
-    final prefs =
-        await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('loggedIn', false);
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (_) => const LoginPage(),
-      ),
+      MaterialPageRoute(builder: (_) => const LoginPage()),
     );
   }
 
@@ -1200,10 +935,7 @@ class _HomePageState extends State<HomePage> {
         .map(
           (word) => word.isEmpty
               ? word
-              : word[0].toUpperCase() +
-                    word
-                        .substring(1)
-                        .toLowerCase(),
+              : word[0].toUpperCase() + word.substring(1).toLowerCase(),
         )
         .join(' ');
   }
@@ -1218,49 +950,29 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: 24,
-            color: Theme.of(
-              context,
-            ).colorScheme.primary,
+            color: Theme.of(context).colorScheme.primary,
             letterSpacing: -0.5,
           ),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(
-              right: 16,
-            ),
+            padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: StatusPill(
-                text: connected
-                    ? 'Online'
-                    : 'Offline',
-                icon: connected
-                    ? Icons.cloud_done
-                    : Icons.cloud_off,
+                text: connected ? 'Online' : 'Offline',
+                icon: connected ? Icons.cloud_done : Icons.cloud_off,
                 backgroundColor: connected
-                    ? Theme.of(context)
-                          .colorScheme
-                          .primary
-                          .withOpacity(0.1)
-                    : Theme.of(context)
-                          .colorScheme
-                          .error
-                          .withOpacity(0.1),
+                    ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                    : Theme.of(context).colorScheme.error.withOpacity(0.1),
                 textColor: connected
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.primary
-                    : Theme.of(
-                        context,
-                      ).colorScheme.error,
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.error,
               ),
             ),
           ),
           if (!connected)
             Padding(
-              padding: const EdgeInsets.only(
-                right: 8,
-              ),
+              padding: const EdgeInsets.only(right: 8),
               child: IconButton(
                 icon: _isReconnecting
                     ? const SizedBox(
@@ -1268,56 +980,34 @@ class _HomePageState extends State<HomePage> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          valueColor:
-                              AlwaysStoppedAnimation<
-                                Color
-                              >(
-                                Color(0xFFFF6B6B),
-                              ),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Color(0xFFFF6B6B),
+                          ),
                         ),
                       )
-                    : const Icon(
-                        Icons.refresh_rounded,
-                        size: 24,
-                      ),
+                    : const Icon(Icons.refresh_rounded, size: 24),
                 style: IconButton.styleFrom(
-                  foregroundColor: const Color(
-                    0xFFFF6B6B,
-                  ),
-                  backgroundColor: const Color(
-                    0xFFFF6B6B,
-                  ).withOpacity(0.1),
-                  padding: const EdgeInsets.all(
-                    8,
-                  ),
+                  foregroundColor: const Color(0xFFFF6B6B),
+                  backgroundColor: const Color(0xFFFF6B6B).withOpacity(0.1),
+                  padding: const EdgeInsets.all(8),
                 ),
-                onPressed: _isReconnecting
-                    ? null
-                    : _reconnect,
+                onPressed: _isReconnecting ? null : _reconnect,
               ),
             ),
           IconButton(
-            icon: const Icon(
-              Icons.logout_rounded,
-            ),
+            icon: const Icon(Icons.logout_rounded),
             onPressed: _logout,
             style: IconButton.styleFrom(
-              foregroundColor: const Color(
-                0xFFFFD700,
-              ),
+              foregroundColor: const Color(0xFFFFD700),
             ),
             tooltip: 'Logout',
           ),
         ],
       ),
       body: Container(
-        color: Theme.of(
-          context,
-        ).scaffoldBackgroundColor,
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: AnimatedSwitcher(
-          duration: const Duration(
-            milliseconds: 350,
-          ),
+          duration: const Duration(milliseconds: 350),
           switchInCurve: Curves.easeOutCirc,
           switchOutCurve: Curves.easeInCirc,
           transitionBuilder: (child, animation) {
@@ -1326,10 +1016,7 @@ class _HomePageState extends State<HomePage> {
               child: SlideTransition(
                 position:
                     Tween<Offset>(
-                      begin: const Offset(
-                        0.02,
-                        0.02,
-                      ),
+                      begin: const Offset(0.02, 0.02),
                       end: Offset.zero,
                     ).animate(
                       CurvedAnimation(
@@ -1341,36 +1028,29 @@ class _HomePageState extends State<HomePage> {
               ),
             );
           },
-          child: _currentTab == 2
+          child: _currentTab == 1
               ? _buildVoiceTab()
+              : _currentTab == 3
+              ? const DocumentUploadScreen(key: ValueKey('documents'))
               : _currentTab == 0
               ? Column(
                   key: const ValueKey('rooms'),
                   children: [
                     AnimatedSwitcher(
-                      duration: const Duration(
-                        milliseconds: 250,
-                      ),
+                      duration: const Duration(milliseconds: 250),
                       child: !connected
                           ? Container(
-                              key: const ValueKey(
-                                'banner',
+                              key: const ValueKey('banner'),
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 12,
+                                horizontal: 16,
                               ),
-                              width:
-                                  double.infinity,
-                              padding:
-                                  const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                    horizontal:
-                                        16,
-                                  ),
                               decoration: BoxDecoration(
-                                color: Colors
-                                    .orange[50],
+                                color: Colors.orange[50],
                                 border: Border(
                                   bottom: BorderSide(
-                                    color: Colors
-                                        .orange[200]!,
+                                    color: Colors.orange[200]!,
                                     width: 1,
                                   ),
                                 ),
@@ -1378,26 +1058,18 @@ class _HomePageState extends State<HomePage> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    Icons
-                                        .warning_rounded,
-                                    color: Colors
-                                        .orange[700],
+                                    Icons.warning_rounded,
+                                    color: Colors.orange[700],
                                     size: 20,
                                   ),
-                                  const SizedBox(
-                                    width: 12,
-                                  ),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       'Disconnected from MQTT',
                                       style: TextStyle(
-                                        color: Colors
-                                            .orange[700],
-                                        fontSize:
-                                            14,
-                                        fontWeight:
-                                            FontWeight
-                                                .w500,
+                                        color: Colors.orange[700],
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
@@ -1408,47 +1080,31 @@ class _HomePageState extends State<HomePage> {
                     ),
                     Expanded(
                       child: GridView.builder(
-                        physics:
-                            const BouncingScrollPhysics(
-                              parent:
-                                  AlwaysScrollableScrollPhysics(),
-                            ),
-                        padding:
-                            const EdgeInsets.all(
-                              16,
-                            ),
+                        physics: const BouncingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        padding: const EdgeInsets.all(16),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               mainAxisSpacing: 16,
-                              crossAxisSpacing:
-                                  16,
-                              childAspectRatio:
-                                  0.85,
+                              crossAxisSpacing: 16,
+                              childAspectRatio: 0.85,
                             ),
-                        itemCount:
-                            _rooms.length - 1,
+                        itemCount: _rooms.length - 1,
                         itemBuilder: (context, i) {
-                          final roomName =
-                              _rooms[i + 1];
+                          final roomName = _rooms[i + 1];
                           final roomLights = _lights
-                              .where(
-                                (light) =>
-                                    light['room'] ==
-                                    roomName,
-                              )
+                              .where((light) => light['room'] == roomName)
                               .toList();
-                          final allOn = roomLights
-                              .every(
-                                (light) =>
-                                    light['on'],
-                              );
+                          final allOn = roomLights.every(
+                            (light) => light['on'],
+                          );
 
                           return Hero(
                             tag: 'room_$roomName',
                             child: Material(
-                              color: Colors
-                                  .transparent,
+                              color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
                                   Navigator.push(
@@ -1460,14 +1116,10 @@ class _HomePageState extends State<HomePage> {
                                             animation,
                                             secondaryAnimation,
                                           ) => _RoomDetailPage(
-                                            roomName:
-                                                roomName,
-                                            lights:
-                                                roomLights,
-                                            onToggleLight:
-                                                _toggleLight,
-                                            connected:
-                                                connected,
+                                            roomName: roomName,
+                                            lights: roomLights,
+                                            onToggleLight: _toggleLight,
+                                            connected: connected,
                                           ),
                                       transitionsBuilder:
                                           (
@@ -1476,122 +1128,89 @@ class _HomePageState extends State<HomePage> {
                                             secondaryAnimation,
                                             child,
                                           ) {
-                                            const begin = Offset(
-                                              1.0,
-                                              0.0,
-                                            );
-                                            const end =
-                                                Offset.zero;
-                                            const curve =
-                                                Curves.easeOutCubic;
-                                            var tween =
-                                                Tween(
-                                                  begin: begin,
-                                                  end: end,
-                                                ).chain(
-                                                  CurveTween(
-                                                    curve: curve,
-                                                  ),
-                                                );
+                                            const begin = Offset(1.0, 0.0);
+                                            const end = Offset.zero;
+                                            const curve = Curves.easeOutCubic;
+                                            var tween = Tween(
+                                              begin: begin,
+                                              end: end,
+                                            ).chain(CurveTween(curve: curve));
                                             return SlideTransition(
-                                              position: animation.drive(
-                                                tween,
-                                              ),
+                                              position: animation.drive(tween),
                                               child: FadeTransition(
                                                 opacity: animation,
                                                 child: child,
                                               ),
                                             );
                                           },
-                                      transitionDuration:
-                                          const Duration(
-                                            milliseconds:
-                                                400,
-                                          ),
+                                      transitionDuration: const Duration(
+                                        milliseconds: 400,
+                                      ),
                                     ),
                                   );
                                 },
-                                borderRadius:
-                                    BorderRadius.circular(
-                                      20,
-                                    ),
+                                borderRadius: BorderRadius.circular(20),
                                 child: Card(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .surfaceContainerHighest,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
                                   elevation: 0,
                                   child: Padding(
-                                    padding:
-                                        const EdgeInsets.all(
-                                          16,
-                                        ),
+                                    padding: const EdgeInsets.all(16),
                                     child: Column(
                                       crossAxisAlignment:
-                                          CrossAxisAlignment
-                                              .start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         // Top row: Room name only
                                         Text(
-                                          _toTitleCase(
-                                            roomName,
-                                          ),
-                                          maxLines:
-                                              1,
-                                          overflow:
-                                              TextOverflow.ellipsis,
-                                          style:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.titleLarge?.copyWith(
+                                          _toTitleCase(roomName),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
                                                 fontWeight: FontWeight.w800,
                                               ),
                                         ),
-                                        const SizedBox(
-                                          height:
-                                              12,
-                                        ),
+                                        const SizedBox(height: 12),
                                         // Device count
                                         Text(
                                           '${roomLights.length} device${roomLights.length != 1 ? 's' : ''}',
-                                          style:
-                                              Theme.of(
-                                                context,
-                                              ).textTheme.bodySmall?.copyWith(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
                                                 color: Theme.of(
                                                   context,
                                                 ).colorScheme.onSurfaceVariant,
                                               ),
                                         ),
-                                        const SizedBox(
-                                          height:
-                                              12,
-                                        ),
+                                        const SizedBox(height: 12),
                                         // Status pill center
                                         Center(
                                           child: StatusPill(
-                                            text:
-                                                roomLights.isEmpty
+                                            text: roomLights.isEmpty
                                                 ? 'No devices'
                                                 : allOn
                                                 ? 'All On'
                                                 : 'Some Off',
-                                            icon:
-                                                roomLights.isEmpty
+                                            icon: roomLights.isEmpty
                                                 ? Icons.devices_other
                                                 : allOn
                                                 ? Icons.lightbulb
                                                 : Icons.lightbulb_outline,
-                                            backgroundColor: Theme.of(
-                                              context,
-                                            ).colorScheme.surface.withOpacity(0.6),
-                                            textColor:
-                                                allOn
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .surface
+                                                .withOpacity(0.6),
+                                            textColor: allOn
                                                 ? Theme.of(
                                                     context,
                                                   ).colorScheme.primary
-                                                : Theme.of(
-                                                    context,
-                                                  ).colorScheme.onSurfaceVariant,
+                                                : Theme.of(context)
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
                                           ),
                                         ),
                                         const Spacer(),
@@ -1604,15 +1223,14 @@ class _HomePageState extends State<HomePage> {
                                               Row(
                                                 children: [
                                                   Icon(
-                                                    Icons.power_settings_new_rounded,
+                                                    Icons
+                                                        .power_settings_new_rounded,
                                                     size: 18,
-                                                    color: Theme.of(
-                                                      context,
-                                                    ).colorScheme.onSurfaceVariant,
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .onSurfaceVariant,
                                                   ),
-                                                  const SizedBox(
-                                                    width: 6,
-                                                  ),
+                                                  const SizedBox(width: 6),
                                                   Text(
                                                     'Master',
                                                     style: Theme.of(
@@ -1625,10 +1243,9 @@ class _HomePageState extends State<HomePage> {
                                                 value: allOn,
                                                 onChanged: roomLights.isEmpty
                                                     ? null
-                                                    : (
-                                                        value,
-                                                      ) {
-                                                        for (final light in roomLights) {
+                                                    : (value) {
+                                                        for (final light
+                                                            in roomLights) {
                                                           _toggleLight(
                                                             int.parse(
                                                                   light['id'],
@@ -1644,16 +1261,12 @@ class _HomePageState extends State<HomePage> {
                                         else
                                           Center(
                                             child: StatusPill(
-                                              text:
-                                                  'Offline',
-                                              icon:
-                                                  Icons.cloud_off,
-                                              backgroundColor:
-                                                  Theme.of(
-                                                    context,
-                                                  ).colorScheme.error.withOpacity(
-                                                    0.12,
-                                                  ),
+                                              text: 'Offline',
+                                              icon: Icons.cloud_off,
+                                              backgroundColor: Theme.of(context)
+                                                  .colorScheme
+                                                  .error
+                                                  .withOpacity(0.12),
                                               textColor: Theme.of(
                                                 context,
                                               ).colorScheme.error,
@@ -1673,115 +1286,84 @@ class _HomePageState extends State<HomePage> {
                 )
               : ListView(
                   key: const ValueKey('settings'),
-                  padding: const EdgeInsets.all(
-                    16,
+                  padding: const EdgeInsets.all(16),
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
                   ),
-                  physics:
-                      const BouncingScrollPhysics(
-                        parent:
-                            AlwaysScrollableScrollPhysics(),
-                      ),
                   children: [
                     _buildSettingCard(
                       icon: Icons.wifi_tethering,
                       title: 'Broker Host',
-                      subtitle:
-                          mqtt.lastServer ??
-                          mqttHost,
+                      subtitle: mqtt.lastServer ?? mqttHost,
                     ),
                     const SizedBox(height: 12),
                     _buildSettingCard(
-                      icon:
-                          Icons.settings_ethernet,
+                      icon: Icons.settings_ethernet,
                       title: 'Broker Port',
-                      subtitle:
-                          '${mqtt.lastPort ?? 1883}',
+                      subtitle: '${mqtt.lastPort ?? 1883}',
+                    ),
+                    const SizedBox(height: 12),
+                    // ── Backend Host (editable) ──────────────────────────────
+                    GestureDetector(
+                      onTap: _showBackendHostDialog,
+                      child: _buildSettingCard(
+                        icon: Icons.dns_rounded,
+                        title: 'Backend Host',
+                        subtitle: '$_backendHost:8000  •  Tap to edit',
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildSettingCard(
-                      icon: connected
-                          ? Icons.cloud_done
-                          : Icons.cloud_off,
-                      iconColor: connected
-                          ? Colors.green
-                          : Colors.red,
+                      icon: connected ? Icons.cloud_done : Icons.cloud_off,
+                      iconColor: connected ? Colors.green : Colors.red,
                       title: 'Connection Status',
-                      subtitle: connected
-                          ? 'Online'
-                          : 'Offline',
+                      subtitle: connected ? 'Online' : 'Offline',
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.icon(
-                        onPressed: _isReconnecting
-                            ? null
-                            : _reconnect,
+                        onPressed: _isReconnecting ? null : _reconnect,
                         icon: _isReconnecting
                             ? const SizedBox(
                                 height: 16,
                                 width: 16,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor:
-                                      AlwaysStoppedAnimation<
-                                        Color
-                                      >(
-                                        Color(
-                                          0xFF0B1020,
-                                        ),
-                                      ),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Color(0xFF0B1020),
+                                  ),
                                 ),
                               )
-                            : const Icon(
-                                Icons.refresh,
-                              ),
-                        label: const Text(
-                          'Reconnect',
-                        ),
+                            : const Icon(Icons.refresh),
+                        label: const Text('Reconnect'),
                       ),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed: connected
-                            ? _disconnect
-                            : null,
-                        icon: const Icon(
-                          Icons.cloud_off,
-                        ),
-                        label: const Text(
-                          'Disconnect',
-                        ),
+                        onPressed: connected ? _disconnect : null,
+                        icon: const Icon(Icons.cloud_off),
+                        label: const Text('Disconnect'),
                       ),
                     ),
                     const SizedBox(height: 24),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed:
-                            _showRoomManagement,
-                        icon: const Icon(
-                          Icons.home_work,
-                        ),
-                        label: const Text(
-                          'Manage Rooms',
-                        ),
+                        onPressed: _showRoomManagement,
+                        icon: const Icon(Icons.home_work),
+                        label: const Text('Manage Rooms'),
                       ),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
-                        onPressed:
-                            _showDeviceManagement,
-                        icon: const Icon(
-                          Icons.lightbulb,
-                        ),
-                        label: const Text(
-                          'Manage Devices',
-                        ),
+                        onPressed: _showDeviceManagement,
+                        icon: const Icon(Icons.lightbulb),
+                        label: const Text('Manage Devices'),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -1789,21 +1371,11 @@ class _HomePageState extends State<HomePage> {
                       width: double.infinity,
                       child: TextButton.icon(
                         onPressed: _logout,
-                        icon: const Icon(
-                          Icons.logout,
+                        icon: const Icon(Icons.logout),
+                        label: const Text('Logout'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.error,
                         ),
-                        label: const Text(
-                          'Logout',
-                        ),
-                        style:
-                            TextButton.styleFrom(
-                              foregroundColor:
-                                  Theme.of(
-                                        context,
-                                      )
-                                      .colorScheme
-                                      .error,
-                            ),
                       ),
                     ),
                   ],
@@ -1812,66 +1384,47 @@ class _HomePageState extends State<HomePage> {
       ),
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
-          navigationBarTheme:
-              NavigationBarThemeData(
-                backgroundColor: const Color(
-                  0xFF1a1a1a,
-                ),
-                indicatorColor: const Color(
-                  0xFFD4AF37,
-                ).withOpacity(0.2),
-                labelTextStyle:
-                    WidgetStateProperty.all(
-                      const TextStyle(
-                        fontSize: 12,
-                        fontWeight:
-                            FontWeight.w600,
-                        color: Color(0xFFD4AF37),
-                      ),
-                    ),
+          navigationBarTheme: NavigationBarThemeData(
+            backgroundColor: const Color(0xFF1a1a1a),
+            indicatorColor: const Color(0xFFD4AF37).withOpacity(0.2),
+            labelTextStyle: WidgetStateProperty.all(
+              const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFD4AF37),
               ),
+            ),
+          ),
         ),
         child: NavigationBar(
           selectedIndex: _currentTab,
           onDestinationSelected: (index) {
             setState(() => _currentTab = index);
           },
-          labelBehavior:
-              NavigationDestinationLabelBehavior
-                  .alwaysShow,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           destinations: const [
             NavigationDestination(
-              icon: Icon(
-                Icons.home_rounded,
-                color: Color(0xFF666666),
-              ),
-              selectedIcon: Icon(
-                Icons.home_rounded,
-                color: Color(0xFFFFD700),
-              ),
+              icon: Icon(Icons.home_rounded, color: Color(0xFF666666)),
+              selectedIcon: Icon(Icons.home_rounded, color: Color(0xFFFFD700)),
               label: 'Rooms',
             ),
             NavigationDestination(
-              icon: Icon(
-                Icons.mic_none_rounded,
-                color: Color(0xFF666666),
-              ),
-              selectedIcon: Icon(
-                Icons.mic_rounded,
-                color: Color(0xFFFFD700),
-              ),
+              icon: Icon(Icons.mic_none_rounded, color: Color(0xFF666666)),
+              selectedIcon: Icon(Icons.mic_rounded, color: Color(0xFFFFD700)),
               label: 'Voice',
             ),
             NavigationDestination(
-              icon: Icon(
-                Icons.settings,
-                color: Color(0xFF666666),
-              ),
+              icon: Icon(Icons.settings, color: Color(0xFF666666)),
+              selectedIcon: Icon(Icons.settings, color: Color(0xFFFFD700)),
+              label: 'Settings',
+            ),
+            NavigationDestination(
+              icon: Icon(Icons.folder_outlined, color: Color(0xFF666666)),
               selectedIcon: Icon(
-                Icons.settings,
+                Icons.folder_open_rounded,
                 color: Color(0xFFFFD700),
               ),
-              label: 'Settings',
+              label: 'Documents',
             ),
           ],
         ),
@@ -1887,10 +1440,7 @@ class _HomePageState extends State<HomePage> {
 
     return SingleChildScrollView(
       key: const ValueKey('voice'),
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 28,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -1948,9 +1498,7 @@ class _HomePageState extends State<HomePage> {
                         const SizedBox(height: 12),
                         Text(
                           _recognizedText,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
+                          style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: colorScheme.onSurface,
@@ -1990,8 +1538,7 @@ class _HomePageState extends State<HomePage> {
                       StatusPill(
                         text: 'MQTT Ready',
                         icon: Icons.send_rounded,
-                        backgroundColor:
-                            colorScheme.primary.withOpacity(0.1),
+                        backgroundColor: colorScheme.primary.withOpacity(0.1),
                         textColor: colorScheme.primary,
                       ),
                     ],
@@ -2003,9 +1550,7 @@ class _HomePageState extends State<HomePage> {
                     decoration: BoxDecoration(
                       color: const Color(0xFF0B1020),
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color(0xFF2A3553),
-                      ),
+                      border: Border.all(color: const Color(0xFF2A3553)),
                     ),
                     child: Text(
                       encodeVoiceCommandJson(_lastVoiceJson!),
@@ -2043,17 +1588,75 @@ class _HomePageState extends State<HomePage> {
   void _showDeviceManagement() {
     showDialog(
       context: context,
-      builder: (context) =>
-          _DeviceManagementDialog(
-            devices: _lights,
-            rooms: _roomsList,
-            onSave: (devices) async {
-              setState(() => _lights = devices);
-              await _saveDevices();
-              Navigator.pop(context);
-            },
-          ),
+      builder: (context) => _DeviceManagementDialog(
+        devices: _lights,
+        rooms: _roomsList,
+        onSave: (devices) async {
+          setState(() => _lights = devices);
+          await _saveDevices();
+          Navigator.pop(context);
+        },
+      ),
     );
+  }
+
+  /// Opens a dialog to edit the backend server IP or hostname.
+  Future<void> _showBackendHostDialog() async {
+    final controller = TextEditingController(text: _backendHost);
+    final newHost = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Backend Host'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter your backend address:\n\n'
+              '• LAN IP (same Wi-Fi): 192.168.1.5\n'
+              '• ngrok URL: https://abc123.ngrok-free.app\n'
+              '• Emulator: 10.0.2.2',
+              style: TextStyle(fontSize: 13, height: 1.6),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(
+                labelText: 'Host or full URL',
+                hintText: 'https://abc123.ngrok-free.app',
+                prefixIcon: Icon(Icons.dns_rounded),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (newHost != null && newHost.isNotEmpty && newHost != _backendHost) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('backendHost', newHost);
+      if (!mounted) return;
+      setState(() => _backendHost = newHost);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Backend host set to $newHost'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Widget _buildSettingCard({
@@ -2076,37 +1679,23 @@ class _HomePageState extends State<HomePage> {
         );
       },
       child: Card(
-        color: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: ListTile(
           leading: Icon(
             icon,
-            color:
-                iconColor ??
-                Theme.of(
-                  context,
-                ).colorScheme.primary,
+            color: iconColor ?? Theme.of(context).colorScheme.primary,
           ),
           title: Text(
             title,
-            style: Theme.of(context)
-                .textTheme
-                .labelLarge
-                ?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
             subtitle,
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
-                ),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
@@ -2128,12 +1717,10 @@ class _RoomDetailPage extends StatefulWidget {
   });
 
   @override
-  State<_RoomDetailPage> createState() =>
-      _RoomDetailPageState();
+  State<_RoomDetailPage> createState() => _RoomDetailPageState();
 }
 
-class _RoomDetailPageState
-    extends State<_RoomDetailPage> {
+class _RoomDetailPageState extends State<_RoomDetailPage> {
   late List<Map<String, dynamic>> _roomLights;
 
   @override
@@ -2143,13 +1730,9 @@ class _RoomDetailPageState
   }
 
   void _toggleLight(int index, bool value) {
-    setState(
-      () => _roomLights[index]['on'] = value,
-    );
+    setState(() => _roomLights[index]['on'] = value);
     widget.onToggleLight(
-      _findLightIndexInMain(
-        _roomLights[index]['id'],
-      ),
+      _findLightIndexInMain(_roomLights[index]['id']),
       value,
     );
   }
@@ -2166,28 +1749,18 @@ class _RoomDetailPageState
       backgroundColor: const Color(0xFF121212),
       appBar: AppBar(
         title: ShaderMask(
-          shaderCallback: (bounds) =>
-              const LinearGradient(
-                colors: [
-                  Color(0xFFFFD700),
-                  Color(0xFFD4AF37),
-                ],
-              ).createShader(bounds),
+          shaderCallback: (bounds) => const LinearGradient(
+            colors: [Color(0xFFFFD700), Color(0xFFD4AF37)],
+          ).createShader(bounds),
           child: Text(
             widget.roomName,
             style: TextStyle(
               fontWeight: FontWeight.w700,
-              color: Theme.of(
-                context,
-              ).colorScheme.primary,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
         ),
-        iconTheme: IconThemeData(
-          color: Theme.of(
-            context,
-          ).colorScheme.primary,
-        ),
+        iconTheme: IconThemeData(color: Theme.of(context).colorScheme.primary),
       ),
       body: ListView.builder(
         physics: const BouncingScrollPhysics(
@@ -2198,57 +1771,35 @@ class _RoomDetailPageState
         itemBuilder: (context, i) {
           final light = _roomLights[i];
           return Padding(
-            padding: const EdgeInsets.only(
-              bottom: 12,
-            ),
+            padding: const EdgeInsets.only(bottom: 12),
             child: Card(
-              color: Theme.of(context)
-                  .colorScheme
-                  .surfaceContainerHighest,
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: ListTile(
                 title: Text(
                   light['name'],
-                  style: Theme.of(context)
-                      .textTheme
-                      .labelLarge
-                      ?.copyWith(
-                        fontWeight:
-                            FontWeight.w700,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 subtitle: Text(
                   light['room'],
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant,
-                      ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
                 leading: Icon(
-                  (light['type'] ?? 'light') ==
-                          'fan'
+                  (light['type'] ?? 'light') == 'fan'
                       ? Icons.mode_fan_off
-                      : (light['type'] ??
-                                'light') ==
-                            'buzzer'
+                      : (light['type'] ?? 'light') == 'buzzer'
                       ? (light['on']
-                            ? Icons
-                                  .notifications_active_rounded
-                            : Icons
-                                  .notifications_off_rounded)
+                            ? Icons.notifications_active_rounded
+                            : Icons.notifications_off_rounded)
                       : light['on']
                       ? Icons.lightbulb
                       : Icons.lightbulb_outline,
                   color: light['on']
-                      ? Theme.of(
-                          context,
-                        ).colorScheme.primary
-                      : Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant,
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 trailing: Switch(
                   value: light['on'],
@@ -2265,26 +1816,19 @@ class _RoomDetailPageState
   }
 }
 
-class _RoomManagementDialog
-    extends StatefulWidget {
+class _RoomManagementDialog extends StatefulWidget {
   final List<String> rooms;
   final Function(List<String>) onSave;
 
-  const _RoomManagementDialog({
-    required this.rooms,
-    required this.onSave,
-  });
+  const _RoomManagementDialog({required this.rooms, required this.onSave});
 
   @override
-  State<_RoomManagementDialog> createState() =>
-      _RoomManagementDialogState();
+  State<_RoomManagementDialog> createState() => _RoomManagementDialogState();
 }
 
-class _RoomManagementDialogState
-    extends State<_RoomManagementDialog> {
+class _RoomManagementDialogState extends State<_RoomManagementDialog> {
   late List<String> _rooms;
-  final _newRoomController =
-      TextEditingController();
+  final _newRoomController = TextEditingController();
 
   @override
   void initState() {
@@ -2308,15 +1852,9 @@ class _RoomManagementDialogState
                   return ListTile(
                     title: Text(_rooms[i]),
                     trailing: IconButton(
-                      icon: const Icon(
-                        Icons.delete,
-                        color: Colors.red,
-                      ),
+                      icon: const Icon(Icons.delete, color: Colors.red),
                       onPressed: () {
-                        setState(
-                          () =>
-                              _rooms.removeAt(i),
-                        );
+                        setState(() => _rooms.removeAt(i));
                       },
                     ),
                   );
@@ -2329,8 +1867,7 @@ class _RoomManagementDialogState
               decoration: InputDecoration(
                 labelText: 'New Room Name',
                 border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
@@ -2339,13 +1876,9 @@ class _RoomManagementDialogState
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  if (_newRoomController
-                      .text
-                      .isNotEmpty) {
+                  if (_newRoomController.text.isNotEmpty) {
                     setState(() {
-                      _rooms.add(
-                        _newRoomController.text,
-                      );
+                      _rooms.add(_newRoomController.text);
                       _newRoomController.clear();
                     });
                   }
@@ -2370,12 +1903,10 @@ class _RoomManagementDialogState
   }
 }
 
-class _DeviceManagementDialog
-    extends StatefulWidget {
+class _DeviceManagementDialog extends StatefulWidget {
   final List<Map<String, dynamic>> devices;
   final List<String> rooms;
-  final Function(List<Map<String, dynamic>>)
-  onSave;
+  final Function(List<Map<String, dynamic>>) onSave;
 
   const _DeviceManagementDialog({
     required this.devices,
@@ -2388,12 +1919,10 @@ class _DeviceManagementDialog
       _DeviceManagementDialogState();
 }
 
-class _DeviceManagementDialogState
-    extends State<_DeviceManagementDialog> {
+class _DeviceManagementDialogState extends State<_DeviceManagementDialog> {
   late List<Map<String, dynamic>> _devices;
   final _nameController = TextEditingController();
-  final _numberController =
-      TextEditingController();
+  final _numberController = TextEditingController();
   String? _selectedRoom;
   String _selectedType = 'light';
 
@@ -2405,8 +1934,7 @@ class _DeviceManagementDialogState
 
   String _formatDeviceType(String type) {
     if (type.isEmpty) return 'Light';
-    return type[0].toUpperCase() +
-        type.substring(1).toLowerCase();
+    return type[0].toUpperCase() + type.substring(1).toLowerCase();
   }
 
   @override
@@ -2415,9 +1943,7 @@ class _DeviceManagementDialogState
       title: const Text('Manage Devices'),
       content: SizedBox(
         width: double.maxFinite,
-        height:
-            MediaQuery.of(context).size.height *
-            0.6,
+        height: MediaQuery.of(context).size.height * 0.6,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -2435,27 +1961,16 @@ class _DeviceManagementDialogState
                         '${device['room']} • ${_formatDeviceType(device['type'] ?? 'light')} (ID: ${device['id']})',
                       ),
                       leading: Icon(
-                        (device['type'] ??
-                                    'light') ==
-                                'fan'
+                        (device['type'] ?? 'light') == 'fan'
                             ? Icons.mode_fan_off
-                            : (device['type'] ??
-                                      'light') ==
-                                  'buzzer'
-                            ? Icons
-                                  .notifications_active_rounded
+                            : (device['type'] ?? 'light') == 'buzzer'
+                            ? Icons.notifications_active_rounded
                             : Icons.lightbulb,
                       ),
                       trailing: IconButton(
-                        icon: const Icon(
-                          Icons.delete,
-                          color: Colors.red,
-                        ),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
-                          setState(
-                            () => _devices
-                                .removeAt(i),
-                          );
+                          setState(() => _devices.removeAt(i));
                         },
                       ),
                     );
@@ -2468,8 +1983,7 @@ class _DeviceManagementDialogState
                 decoration: InputDecoration(
                   labelText: 'Device Name',
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
@@ -2479,12 +1993,10 @@ class _DeviceManagementDialogState
                 decoration: InputDecoration(
                   labelText: 'Device ID',
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                keyboardType:
-                    TextInputType.number,
+                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
@@ -2492,21 +2004,16 @@ class _DeviceManagementDialogState
                 decoration: InputDecoration(
                   labelText: 'Room',
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 items: widget.rooms
                     .map(
-                      (room) => DropdownMenuItem(
-                        value: room,
-                        child: Text(room),
-                      ),
+                      (room) =>
+                          DropdownMenuItem(value: room, child: Text(room)),
                     )
                     .toList(),
-                onChanged: (value) => setState(
-                  () => _selectedRoom = value,
-                ),
+                onChanged: (value) => setState(() => _selectedRoom = value),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
@@ -2514,29 +2021,17 @@ class _DeviceManagementDialogState
                 decoration: InputDecoration(
                   labelText: 'Device Type',
                   border: OutlineInputBorder(
-                    borderRadius:
-                        BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 items: const [
-                  DropdownMenuItem(
-                    value: 'light',
-                    child: Text('Light'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'fan',
-                    child: Text('Fan'),
-                  ),
-                  DropdownMenuItem(
-                    value: 'buzzer',
-                    child: Text('Buzzer'),
-                  ),
+                  DropdownMenuItem(value: 'light', child: Text('Light')),
+                  DropdownMenuItem(value: 'fan', child: Text('Fan')),
+                  DropdownMenuItem(value: 'buzzer', child: Text('Buzzer')),
                 ],
                 onChanged: (value) {
                   if (value == null) return;
-                  setState(
-                    () => _selectedType = value,
-                  );
+                  setState(() => _selectedType = value);
                 },
               ),
               const SizedBox(height: 12),
@@ -2545,32 +2040,21 @@ class _DeviceManagementDialogState
                 child: ElevatedButton(
                   onPressed:
                       _selectedRoom != null &&
-                          _nameController
-                              .text
-                              .isNotEmpty &&
-                          _numberController
-                              .text
-                              .isNotEmpty
+                          _nameController.text.isNotEmpty &&
+                          _numberController.text.isNotEmpty
                       ? () {
                           _devices.add({
-                            'id':
-                                _numberController
-                                    .text,
-                            'name':
-                                _nameController
-                                    .text,
+                            'id': _numberController.text,
+                            'name': _nameController.text,
                             'room': _selectedRoom,
                             'type': _selectedType,
                             'on': false,
                           });
                           setState(() {
-                            _nameController
-                                .clear();
-                            _numberController
-                                .clear();
+                            _nameController.clear();
+                            _numberController.clear();
                             _selectedRoom = null;
-                            _selectedType =
-                                'light';
+                            _selectedType = 'light';
                           });
                         }
                       : null,
@@ -2587,8 +2071,7 @@ class _DeviceManagementDialogState
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () =>
-              widget.onSave(_devices),
+          onPressed: () => widget.onSave(_devices),
           child: const Text('Save'),
         ),
       ],

@@ -43,3 +43,23 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android generated reports
+android/build/reports/
+
+# Flutter analyze output
+analyze_output.txt
+
+# Python / Backend
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+
+# ChromaDB vector store data (regenerated from uploads)
+backend/data/vector_db/
+
+# Temporary files
+*.tmp
