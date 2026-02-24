@@ -328,6 +328,7 @@ class MQTTManager {
   factory MQTTManager() => _instance;
 
   late MqttServerClient client;
+  bool _clientInitialized = false;
   final ValueNotifier<bool> connected =
       ValueNotifier<bool>(false);
   String? _lastServer;
@@ -350,6 +351,7 @@ class MQTTManager {
       clientId,
       port,
     );
+    _clientInitialized = true;
     client.logging(on: false);
     client.keepAlivePeriod = 20;
     client.onDisconnected = _onDisconnected;
@@ -418,9 +420,32 @@ class MQTTManager {
     );
   }
 
+  Stream<List<MqttReceivedMessage<MqttMessage>>>?
+  get updates =>
+      _clientInitialized ? client.updates : null;
+
+  void subscribe(
+    String topic, {
+    MqttQos qos = MqttQos.atLeastOnce,
+  }) {
+    if (!_clientInitialized || !connected.value) {
+      return;
+    }
+    client.subscribe(topic, qos);
+  }
+
+  void unsubscribe(String topic) {
+    if (!_clientInitialized || !connected.value) {
+      return;
+    }
+    client.unsubscribe(topic);
+  }
+
   void disconnect() {
     try {
-      client.disconnect();
+      if (_clientInitialized) {
+        client.disconnect();
+      }
     } catch (_) {}
     connected.value = false;
   }
@@ -997,8 +1022,19 @@ class _HomePageState extends State<HomePage> {
   ];
 
   final mqtt = MQTTManager();
+  static const String _sensorTopic =
+      'home/sensors/node1';
+
   bool _isReconnecting = false;
   int _currentTab = 0;
+  StreamSubscription<
+    List<MqttReceivedMessage<MqttMessage>>
+  >?
+  _sensorSubscription;
+
+  Map<String, dynamic>? _latestSensorReading;
+  String? _sensorError;
+  DateTime? _sensorReceivedAt;
 
   // ─── Voice state ─────────────────────────────────────────────────────────
   String _recognizedText = '';
@@ -1028,11 +1064,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadData();
-    _ensureConnection();
+
+    // Important: attach the listener BEFORE starting the async connect,
+    // otherwise a fast connect can flip `connected` before we start listening.
     mqtt.connected.addListener(
       _onConnectionChanged,
     );
+
+    _loadData();
+
+    // Kick off connect; the ValueNotifier listener will
+    // handle subscription setup when connected.
+    _ensureConnection();
   }
 
   Future<void> _loadData() async {
@@ -1126,10 +1169,83 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _onConnectionChanged() => setState(() {});
+  void _onConnectionChanged() {
+    if (mqtt.connected.value) {
+      _setupSensorSubscription();
+    }
+    setState(() {});
+  }
+
+  void _setupSensorSubscription() {
+    _sensorSubscription?.cancel();
+    final updates = mqtt.updates;
+    if (updates == null) return;
+
+    _sensorSubscription = updates.listen(
+      _handleMqttMessages,
+      onError: (error) {
+        if (!mounted) return;
+        setState(() {
+          _sensorError =
+              'Sensor stream error: $error';
+        });
+      },
+    );
+    _subscribeToSensorTopic();
+  }
+
+  void _subscribeToSensorTopic() {
+    mqtt.subscribe(_sensorTopic);
+  }
+
+  void _handleMqttMessages(
+    List<MqttReceivedMessage<MqttMessage>>
+    messages,
+  ) {
+    for (final message in messages) {
+      if (message.topic != _sensorTopic) {
+        continue;
+      }
+
+      try {
+        final publishMessage =
+            message.payload as MqttPublishMessage;
+        final payloadText =
+            MqttPublishPayload.bytesToStringAsString(
+              publishMessage.payload.message,
+            );
+        final decoded = jsonDecode(payloadText);
+
+        if (decoded is! Map) {
+          if (!mounted) return;
+          setState(() {
+            _sensorError =
+                'Unexpected payload format';
+          });
+          continue;
+        }
+
+        if (!mounted) return;
+        setState(() {
+          _latestSensorReading =
+              Map<String, dynamic>.from(decoded);
+          _sensorReceivedAt = DateTime.now();
+          _sensorError = null;
+        });
+      } catch (error) {
+        if (!mounted) return;
+        setState(() {
+          _sensorError =
+              'Invalid sensor JSON: $error';
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
+    _sensorSubscription?.cancel();
+    mqtt.unsubscribe(_sensorTopic);
     mqtt.connected.removeListener(
       _onConnectionChanged,
     );
@@ -1683,6 +1799,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ],
                 )
+              : _currentTab == 2
+              ? _buildSensorsTab()
               : ListView(
                   key: const ValueKey('settings'),
                   padding: const EdgeInsets.all(
@@ -1831,7 +1949,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 indicatorColor: const Color(
                   0xFFD4AF37,
-                ).withOpacity(0.2),
+                ).withValues(alpha: 0.2),
                 labelTextStyle:
                     WidgetStateProperty.all(
                       const TextStyle(
@@ -1876,6 +1994,17 @@ class _HomePageState extends State<HomePage> {
             ),
             NavigationDestination(
               icon: Icon(
+                Icons.sensors_outlined,
+                color: Color(0xFF666666),
+              ),
+              selectedIcon: Icon(
+                Icons.sensors_rounded,
+                color: Color(0xFFFFD700),
+              ),
+              label: 'Sensors',
+            ),
+            NavigationDestination(
+              icon: Icon(
                 Icons.settings,
                 color: Color(0xFF666666),
               ),
@@ -1889,6 +2018,419 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSensorsTab() {
+    final data = _latestSensorReading;
+    final hasData = data != null;
+    final readings = _extractSensorReadings(data);
+    final node = _readString(data, const [
+      'node',
+      'node_id',
+    ]);
+    final sensorType = _readString(data, const [
+      'sensor type',
+      'sensor_type',
+      'sensor',
+    ]);
+    final tsMs = _readString(data, const [
+      'ts_ms',
+      'timestamp_ms',
+    ]);
+    final title = node == '--'
+        ? 'Sensors'
+        : '${_toTitleCase(node)} Sensors';
+
+    return ListView(
+      key: const ValueKey('sensors'),
+      padding: const EdgeInsets.all(16),
+      children: [
+        LuxCard(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                _sensorTopic,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: 14),
+              StatusPill(
+                text: hasData
+                    ? 'Receiving'
+                    : 'Waiting',
+                icon: hasData
+                    ? Icons.sensors
+                    : Icons.hourglass_empty,
+                backgroundColor: hasData
+                    ? Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.12)
+                    : Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
+                textColor: hasData
+                    ? Theme.of(
+                        context,
+                      ).colorScheme.primary
+                    : Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant,
+              ),
+              const SizedBox(height: 16),
+              if (readings.isEmpty)
+                _metricTile(
+                  label: 'Readings',
+                  value: 'No data yet',
+                  icon: Icons.hourglass_empty,
+                )
+              else
+                ...List.generate(
+                  readings.length,
+                  (index) {
+                    final reading =
+                        readings[index];
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        bottom:
+                            index ==
+                                readings.length -
+                                    1
+                            ? 0
+                            : 10,
+                      ),
+                      child: _metricTile(
+                        label: reading.label,
+                        value:
+                            _formatReadingValue(
+                              reading.value,
+                              reading.unit,
+                            ),
+                        icon: _iconForSensorKey(
+                          reading.key,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        LuxCard(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              _infoRow('Node', node),
+              if (sensorType != '--') ...[
+                const SizedBox(height: 8),
+                _infoRow('Sensor', sensorType),
+              ],
+              const SizedBox(height: 8),
+              _infoRow('ESP millis', tsMs),
+              const SizedBox(height: 8),
+              _infoRow(
+                'Received',
+                _sensorReceivedAt == null
+                    ? '--'
+                    : _formatTime(
+                        _sensorReceivedAt!,
+                      ),
+              ),
+            ],
+          ),
+        ),
+        if (_sensorError != null) ...[
+          const SizedBox(height: 12),
+          LuxCard(
+            child: Text(
+              _sensorError!,
+              style: TextStyle(
+                color: Theme.of(
+                  context,
+                ).colorScheme.error,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _metricTile({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 10,
+      ),
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: Theme.of(
+              context,
+            ).colorScheme.primary,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium,
+            ),
+          ),
+          Text(
+            value,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String label, String value) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 90,
+          child: Text(
+            label,
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _readString(
+    Map<String, dynamic>? source,
+    List<String> keys,
+  ) {
+    if (source == null) return '--';
+    for (final key in keys) {
+      final value = source[key];
+      if (value != null) {
+        return value.toString();
+      }
+    }
+    return '--';
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour.toString().padLeft(
+      2,
+      '0',
+    );
+    final minute = time.minute.toString().padLeft(
+      2,
+      '0',
+    );
+    final second = time.second.toString().padLeft(
+      2,
+      '0',
+    );
+    return '$hour:$minute:$second';
+  }
+
+  List<_SensorReading> _extractSensorReadings(
+    Map<String, dynamic>? source,
+  ) {
+    if (source == null) {
+      return const <_SensorReading>[];
+    }
+
+    final rawReadings = source['readings'];
+    if (rawReadings is List) {
+      final results = <_SensorReading>[];
+      for (final item in rawReadings) {
+        if (item is! Map) continue;
+
+        final map = Map<String, dynamic>.from(
+          item,
+        );
+        final key = (map['key'] ?? '')
+            .toString()
+            .trim();
+        final fallbackLabel = key.isEmpty
+            ? 'Sensor'
+            : _labelFromSensorKey(key);
+        final label =
+            (map['label'] ?? fallbackLabel)
+                .toString();
+
+        if (label.trim().isEmpty && key.isEmpty) {
+          continue;
+        }
+
+        results.add(
+          _SensorReading(
+            key: key,
+            label: label,
+            value: map['value'],
+            unit: (map['unit'] ?? '').toString(),
+          ),
+        );
+      }
+
+      if (results.isNotEmpty) {
+        return results;
+      }
+    }
+
+    final legacy = <_SensorReading>[];
+    for (final key in const [
+      'temp_c',
+      'hum',
+      'press_hpa',
+    ]) {
+      if (!source.containsKey(key)) continue;
+      legacy.add(
+        _SensorReading(
+          key: key,
+          label: _labelFromSensorKey(key),
+          value: source[key],
+          unit: _defaultUnitForKey(key),
+        ),
+      );
+    }
+    return legacy;
+  }
+
+  String _labelFromSensorKey(String key) {
+    final normalized = key.trim().toLowerCase();
+    if (normalized == 'temp_c') {
+      return 'Temperature';
+    }
+    if (normalized == 'hum') {
+      return 'Humidity';
+    }
+    if (normalized == 'press_hpa') {
+      return 'Pressure';
+    }
+    if (normalized == 'co2_ppm') {
+      return 'CO2';
+    }
+    return normalized
+        .replaceAll('_', ' ')
+        .split(' ')
+        .where((segment) => segment.isNotEmpty)
+        .map(
+          (segment) =>
+              segment[0].toUpperCase() +
+              segment.substring(1),
+        )
+        .join(' ');
+  }
+
+  String _defaultUnitForKey(String key) {
+    switch (key) {
+      case 'temp_c':
+        return 'C';
+      case 'hum':
+        return '%';
+      case 'press_hpa':
+        return 'hPa';
+      case 'co2_ppm':
+        return 'ppm';
+      default:
+        return '';
+    }
+  }
+
+  IconData _iconForSensorKey(String key) {
+    final normalized = key.toLowerCase();
+    if (normalized.contains('temp')) {
+      return Icons.thermostat;
+    }
+    if (normalized.contains('hum')) {
+      return Icons.water_drop;
+    }
+    if (normalized.contains('press')) {
+      return Icons.speed;
+    }
+    if (normalized.contains('co2')) {
+      return Icons.air;
+    }
+    return Icons.sensors;
+  }
+
+  String _formatReadingValue(
+    dynamic value,
+    String unit,
+  ) {
+    String valueText = '--';
+    if (value is num) {
+      final asDouble = value.toDouble();
+      valueText =
+          (asDouble - asDouble.round()).abs() <
+              0.001
+          ? asDouble.round().toString()
+          : asDouble.toStringAsFixed(1);
+    } else if (value != null) {
+      valueText = value.toString();
+    }
+
+    final trimmedUnit = unit.trim();
+    if (trimmedUnit.isEmpty ||
+        valueText == '--') {
+      return valueText;
+    }
+    return '$valueText $trimmedUnit';
   }
 
   // ─── Voice Tab ────────────────────────────────────────────────────────────
@@ -2172,6 +2714,20 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+}
+
+class _SensorReading {
+  final String key;
+  final String label;
+  final dynamic value;
+  final String unit;
+
+  const _SensorReading({
+    required this.key,
+    required this.label,
+    required this.value,
+    required this.unit,
+  });
 }
 
 class _RoomDetailPage extends StatefulWidget {
